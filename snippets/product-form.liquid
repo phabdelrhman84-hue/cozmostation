@@ -1,0 +1,136 @@
+{% capture form_id %}AddToCartForm-{{ section_id }}{% endcapture %}
+{% form 'product', product, id: form_id, class: 'product-single__form' %}
+  {% unless product.has_only_default_variant %}
+    {% for option in product.options_with_values %}
+      {% if settings.variant_type == 'button' %}
+        {% include 'variant-button', section_id: section_id, option_drop: option %}
+      {% else %}
+        {% include 'variant-dropdown', section_id: section_id %}
+      {% endif %}
+    {% endfor %}
+  {% endunless %}
+
+  <select name="id" id="ProductSelect-{{ section_id }}" class="product-single__variants no-js">
+    {% for variant in product.variants %}
+      {% if variant.available %}
+        <option {% if variant == product.selected_or_first_available_variant %}
+          selected="selected" {% endif %}
+          value="{{ variant.id }}">
+          {{ variant.title }} - {{ variant.price | money_with_currency }}
+        </option>
+      {% else %}
+        <option disabled="disabled">
+          {{ variant.title }} - {{ 'products.product.sold_out' | t }}
+        </option>
+      {% endif %}
+    {% endfor %}
+  </select>
+
+  {% if settings.quantity_enable %}
+    <div class="product__quantity product__quantity--{{ settings.variant_type }}">
+      <label for="Quantity-{{ section_id }}">{{ 'products.product.quantity' | t }}</label>
+      {% include 'quantity-input', id: section_id, qty: 1, min: 1 %}
+    </div>
+  {% endif %}
+
+  {%- assign inventory_visible = false -%}
+  {%- if settings.inventory_enable and current_variant.inventory_management == 'shopify' -%}
+    {%- if current_variant.inventory_quantity <= settings.inventory_threshold and current_variant.inventory_quantity >= 0 -%}
+      {%- assign inventory_visible = true -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- if current_variant.inventory_quantity == 0 -%}
+    {%- assign inventory_visible = false -%}
+  {%- endif -%}
+
+  <div
+    id="ProductInventory-{{ section_id }}"
+    class="product__inventory {% unless current_variant.available and current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity > 0 %}hide{% endunless %}"
+    >
+    {% if current_variant.available and current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity > 0 %}
+      {% if current_variant.inventory_quantity < 15 %}
+        <span class="stock-red stock-pulse">🔥 يلا بسرعه ! باقي <strong>{{ current_variant.inventory_quantity }}</strong> قطع فقط في المخزن.</span>
+      {% else %}
+        <span class="stock-green">✔️ متوفر في المخزن - جاهز للشحن.</span>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {%- if settings.inventory_transfers_enable -%}
+    <div
+      id="ProductIncomingInventory-{{ section_id }}"
+      class="product__inventory{% if inventory_visible %} hide{% endif %}">
+      {%- if current_variant.incoming and inventory_visible == false -%}
+        {%- if current_variant.next_incoming_date -%}
+          {% assign date = current_variant.next_incoming_date | date: format: 'date' %}
+          {%- if current_variant.available -%}
+            {{ 'products.product.will_not_ship_until' | t: date: date }}
+          {%- else -%}
+            {{ 'products.product.will_be_in_stock_after' | t: date: date }}
+          {%- endif -%}
+        {%- else -%}
+          {{ 'products.product.waiting_for_stock' | t }}
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- assign enable_dynamic_buttons = false -%}
+  {% if settings.enable_payment_button and template != 'product.preorder' %}
+    {%- assign enable_dynamic_buttons = true -%}
+  {% endif %}
+
+  {% if enable_dynamic_buttons %}
+    <div class="payment-buttons">
+  {% endif %}
+
+    <button
+      {% if product.empty? %}type="button"{% else %}type="submit"{% endif %}
+      name="add"
+      id="AddToCart-{{ section_id }}"
+      class="btn btn--full add-to-cart{% if enable_dynamic_buttons %} btn--secondary{% endif %}"
+      {% unless current_variant.available %} disabled="disabled"{% endunless %}>
+      <span id="AddToCartText-{{ section_id }}">
+        {% if current_variant.available %}
+          {% if template == 'product.preorder' %}
+            {{ 'products.product.preorder' | t }}
+          {% else %}
+            {{ 'products.product.add_to_cart' | t }}
+          {% endif %}
+        {% else %}
+          {{ 'products.product.sold_out' | t }}
+        {% endif %}
+      </span>
+    </button>
+
+    {% if enable_dynamic_buttons %}
+      {{ form | payment_button }}
+    {% endif %}
+
+  {% if enable_dynamic_buttons %}
+    </div>
+  {% endif %}
+
+  <!-- Trust Badge / Authenticity Guarantee -->
+  <div class="trust-badge" dir="rtl">
+    <div class="trust-badge__icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L3.5 6.5V11.5C3.5 16.45 7.02 21.07 12 22.5C16.98 21.07 20.5 16.45 20.5 11.5V6.5L12 2Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8.5 12.5L11 15L16 9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="trust-badge__content">
+      <span class="trust-badge__title">ضمان أصالة المنتج 100%</span>
+      <span class="trust-badge__subtitle">مستورد مباشرة من الوكلاء المعتمدين في كوريا وألمانيا</span>
+    </div>
+  </div>
+
+  <div id="VariantsJson-{{ section_id }}" class="hide" aria-hidden="true">
+    {{ product.variants | json }}
+  </div>
+  {% if product.options.size > 1 %}
+    <div id="CurrentVariantJson-{{ section_id }}" class="hide" aria-hidden="true">
+      {{ current_variant | json }}
+    </div>
+  {% endif %}
+{% endform %}

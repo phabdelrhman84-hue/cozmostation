@@ -1,0 +1,131 @@
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+
+<style>
+  .sticky-add-to-cart {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    z-index: 1000;
+    padding: 10px 15px;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  html[dir="rtl"] .sticky-add-to-cart {
+    left: auto;
+    right: 0;
+  }
+  .sticky-add-to-cart.is-visible {
+    transform: translateY(0);
+  }
+  .sticky-add-to-cart__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sticky-add-to-cart__info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-right: 15px;
+  }
+  html[dir="rtl"] .sticky-add-to-cart__info {
+    margin-right: 0;
+    margin-left: 15px;
+  }
+  .sticky-add-to-cart__title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55vw;
+    color: var(--colorTextBody, #333333);
+  }
+  .sticky-add-to-cart__price {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--colorPrice, #1c1d1d);
+  }
+  .sticky-add-to-cart__btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    font-weight: bold;
+    min-width: 130px;
+  }
+  .sticky-add-to-cart__btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  @media screen and (min-width: 769px) {
+    .sticky-add-to-cart {
+      display: none !important;
+    }
+  }
+</style>
+
+<div id="StickyAddToCart" class="sticky-add-to-cart" style="display: none;">
+  <div class="sticky-add-to-cart__content">
+    <div class="sticky-add-to-cart__info">
+      <span class="sticky-add-to-cart__title">{{ product.title }}</span>
+      <span class="sticky-add-to-cart__price" id="StickyPrice">{{ current_variant.price | money }}</span>
+    </div>
+    <button type="button" id="StickyAddToCartBtn" class="btn btn--primary sticky-add-to-cart__btn" {% unless current_variant.available %}disabled="disabled"{% endunless %}>
+      {% if current_variant.available %}
+        {{ 'products.product.add_to_cart' | t }}
+      {% else %}
+        {{ 'products.product.sold_out' | t }}
+      {% endif %}
+    </button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var stickyBar = document.getElementById('StickyAddToCart');
+    var stickyBtn = document.getElementById('StickyAddToCartBtn');
+    
+    // Find the main product form and main Add to Cart button
+    var mainForm = document.querySelector('form[action^="/cart/add"]');
+    if (!mainForm || !stickyBar || !stickyBtn) return;
+    
+    var mainBtn = mainForm.querySelector('[name="add"]');
+    if (!mainBtn) return;
+    
+    // Unhide the element initially, we strictly control visibility via CSS transformations
+    stickyBar.style.display = 'block';
+
+    var handleScroll = function() {
+      if (window.innerWidth > 768) {
+        stickyBar.classList.remove('is-visible');
+        return;
+      }
+      var btnRect = mainBtn.getBoundingClientRect();
+      
+      // If the main Add to Cart button has scrolled above the viewport (i.e. bottom < 0 roughly) or out of view
+      if (btnRect.bottom < 0) {
+        stickyBar.classList.add('is-visible');
+      } else {
+        stickyBar.classList.remove('is-visible');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+    
+    stickyBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Click the main button directly to trigger the theme's built-in AJAX cart
+      mainBtn.click();
+    });
+
+    // Run initial check
+    handleScroll();
+  });
+</script>
