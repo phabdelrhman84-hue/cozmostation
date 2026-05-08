@@ -1,0 +1,179 @@
+<style>
+  .auto-cross-sell__wrapper {
+    display: none; /* Keep hidden by default */
+    margin: 20px 0;
+    padding: 12px 16px;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: #fafbfc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    transition: opacity 0.4s ease;
+  }
+  .auto-cross-sell__wrapper.is-visible {
+    display: block;
+    animation: fadeIn 0.5s forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .auto-cross-sell__heading {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--colorTextBody, #333333);
+    text-align: right;
+  }
+
+  html[dir="ltr"] .auto-cross-sell__heading {
+    text-align: left;
+  }
+
+  .auto-cross-sell__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+  }
+
+  .auto-cross-sell__details-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0; /* Ensures text truncation works within flexbox */
+  }
+
+  .auto-cross-sell__image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #f4f4f4;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .auto-cross-sell__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .auto-cross-sell__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--colorTextBody, #111111);
+    text-decoration: none;
+    margin-bottom: 4px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    transition: color 0.2s;
+  }
+  
+  .auto-cross-sell__title:hover {
+    color: var(--colorBtnPrimary, #000);
+  }
+
+  .auto-cross-sell__price {
+    font-size: 13px;
+    color: var(--colorPrice, #555555);
+    font-weight: 500;
+  }
+
+  .auto-cross-sell__form {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .auto-cross-sell__btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 4px;
+    font-weight: bold;
+    white-space: nowrap;
+    min-width: unset;
+  }
+</style>
+
+<div class="auto-cross-sell__wrapper" id="AutoCrossSellWrapper">
+  <div class="auto-cross-sell__heading">كملي روتينك ✨</div>
+  <div class="auto-cross-sell__content">
+    <div class="auto-cross-sell__details-wrap">
+      <a href="#" id="ACS_Url_Img">
+        <img class="auto-cross-sell__image" id="ACS_Image" src="" alt="">
+      </a>
+      <div class="auto-cross-sell__info">
+        <a href="#" id="ACS_Url_Title" class="auto-cross-sell__title"></a>
+        <div class="auto-cross-sell__price" id="ACS_Price"></div>
+      </div>
+    </div>
+
+    <form method="post" action="/cart/add" class="auto-cross-sell__form">
+      <input type="hidden" name="id" id="ACS_VariantId" value="" />
+      <button type="submit" name="add" class="btn btn--primary auto-cross-sell__btn">
+        {{ 'products.product.add_to_cart' | t }}
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var productId = {{ product.id | json }};
+    if (!productId) return;
+
+    var url = '/recommendations/products.json?product_id=' + productId + '&limit=1&intent=related';
+
+    fetch(url)
+      .then(function(response) {
+        if (!response.ok) throw new Error('API network error');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data && data.products && data.products.length > 0) {
+          var rec = data.products[0];
+          
+          if(!rec.available) return; // Prevent showing out-of-stock items
+          
+          var wrapper = document.getElementById('AutoCrossSellWrapper');
+          
+          // Populate Links
+          document.getElementById('ACS_Url_Img').href = rec.url;
+          document.getElementById('ACS_Url_Title').href = rec.url;
+          document.getElementById('ACS_Url_Title').textContent = rec.title;
+          
+          // Populate Image
+          if (rec.featured_image) {
+            document.getElementById('ACS_Image').src = rec.featured_image;
+            document.getElementById('ACS_Image').alt = rec.title;
+          }
+          
+          // Populate Price gracefully 
+          var priceHtml = '{{ cart.currency.iso_code }} ' + (rec.price / 100).toFixed(2);
+          if (window.theme && typeof theme.Currency !== 'undefined' && typeof theme.Currency.formatMoney === 'function') {
+             priceHtml = theme.Currency.formatMoney(rec.price, theme.settings.moneyFormat);
+          } else if (window.Shopify && typeof Shopify.formatMoney === 'function') {
+             var moneyFormat = {{ shop.money_format | json }} || '${{amount}}';
+             priceHtml = Shopify.formatMoney(rec.price, moneyFormat);
+          }
+          document.getElementById('ACS_Price').innerHTML = priceHtml;
+          
+          // Populate Form variant ID
+          document.getElementById('ACS_VariantId').value = rec.variants[0].id;
+          
+          // Unhide UI
+          wrapper.classList.add('is-visible');
+        }
+      })
+      .catch(function(error) {
+        console.error('Error fetching auto cross-sell product:', error);
+      });
+  });
+</script>

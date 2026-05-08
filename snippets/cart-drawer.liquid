@@ -1,0 +1,39 @@
+{% if settings.cart_type == 'drawer' %}
+  <div id="CartDrawer" class="drawer drawer--right drawer--has-fixed-footer">
+    <form action="{{ routes.cart_url }}" method="post" novalidate class="drawer__contents">
+      <div class="drawer__fixed-header">
+        <div class="drawer__header appear-animation appear-delay-1">
+          <div class="h2 drawer__title">{{ 'cart.general.title' | t }}</div>
+          <div class="drawer__close">
+            <button type="button" class="drawer__close-button js-drawer-close">
+              <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-close" viewBox="0 0 64 64"><path d="M19 17.61l27.12 27.13m0-27.12L19 44.74"/></svg>
+              <span class="icon__fallback-text">{{ 'cart.general.close_cart' | t }}</span>
+            </button>
+          </div>
+        </div>
+        <!-- Free Shipping Progress Bar -->
+        <div id="FreeShippingBar" class="free-shipping-bar" aria-live="polite" aria-atomic="true" style="display: none;">
+          <div class="free-shipping-bar__inner">
+            <div class="free-shipping-bar__messaging">
+              <span id="FreeShippingMessage" class="free-shipping-bar__message"></span>
+            </div>
+            <div class="free-shipping-bar__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="FreeShippingProgress" class="free-shipping-bar__fill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="CartContainer" class="drawer__inner"></div>
+
+      <!-- Cart Upsell Recommendations (injected into scrollable area by JS) -->
+      <div id="CartUpsells" class="cart-upsells" dir="rtl" style="display: none;" aria-label="أكملي روتينك المخصص">
+        <div class="cart-upsells__header">
+          <span class="cart-upsells__title">أكملي روتينك المخصص</span>
+        </div>
+        <div id="CartUpsellItems" class="cart-upsells__items"></div>
+      </div>
+    </form>
+  </div>
+{% endif %}
+
