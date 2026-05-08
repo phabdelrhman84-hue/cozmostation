@@ -1,0 +1,171 @@
+<div class="footer-custom-sections" dir="rtl">
+  <!-- 1. Trust Badges Section -->
+  <style>
+    .footer-trust-grid {
+      background: #f9f9f9;
+      padding: 40px 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+    .trust-grid-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .trust-grid-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    @media (min-width: 768px) {
+      .trust-grid-row {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    .trust-item {
+      text-align: center;
+      padding: 20px 15px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .trust-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+    .trust-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .trust-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #222;
+      line-height: 1.5;
+    }
+    .trust-text span {
+      font-size: 13px;
+      font-weight: normal;
+      color: #777;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* 2. Brand Grid Section */
+    .brand-grid-section {
+      padding: 50px 0 60px;
+      background: #ffffff;
+    }
+    .brand-grid-header {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 40px;
+      color: #111;
+      font-family: inherit;
+    }
+    .brand-grid-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .brand-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    @media (min-width: 600px) {
+      .brand-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (min-width: 900px) {
+      .brand-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+      }
+    }
+    .brand-grid-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px 10px;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+    }
+    .brand-grid-item:hover {
+      background: #f0f0f0;
+      border-color: #ddd;
+      transform: translateY(-3px);
+    }
+    .brand-grid-name {
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: capitalize;
+      color: #222;
+      text-align: center;
+    }
+  </style>
+
+  <!-- Trust Badges Grid -->
+  <div class="footer-trust-grid">
+    <div class="trust-grid-container">
+      <div class="trust-grid-row">
+        <div class="trust-item">
+          <div class="trust-icon">🛡️</div>
+          <div class="trust-text">منتجات أصلية 100%<span>(بضمان صيدلاني)</span></div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">🚚</div>
+          <div class="trust-text">شحن سريع<span>(لكل محافظات مصر)</span></div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">💵</div>
+          <div class="trust-text">الدفع عند الاستلام<span>(تسوقي بأمان)</span></div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">👩‍⚕️</div>
+          <div class="trust-text">دعم صيدلاني متخصص<span>(لاختيار روتينك)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Brand Grid Section -->
+  <div class="brand-grid-section">
+    <h3 class="brand-grid-header">تسوقي حسب الماركة</h3>
+    <div class="brand-grid-container">
+      <div class="brand-grid">
+        {% for vendor in shop.vendors %}
+          <a href="/collections/vendors?q={{ vendor | url_encode }}" class="brand-grid-item">
+            <span class="brand-grid-name">{{ vendor }}</span>
+          </a>
+        {% else %}
+          <!-- Fallback if no vendors are registered yet -->
+          <a href="/collections/all" class="brand-grid-item"><span class="brand-grid-name">Beauty of Joseon</span></a>
+          <a href="/collections/all" class="brand-grid-item"><span class="brand-grid-name">Anua</span></a>
+          <a href="/collections/all" class="brand-grid-item"><span class="brand-grid-name">Medicube</span></a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Footer promotions",
+    "class": "index-section--footer",
+    "settings": [],
+    "blocks": [
+      {
+        "type": "promotion",
+        "name": "Column",
+        "settings": []
+      }
+    ]
+  }
+{% endschema %}

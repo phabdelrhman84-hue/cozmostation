@@ -1,0 +1,154 @@
+{%- assign cross_sell_product = all_products[section.settings.cross_sell_product] -%}
+
+{%- if cross_sell_product != blank -%}
+  {%- assign current_variant = cross_sell_product.selected_or_first_available_variant -%}
+
+  <style>
+    .compact-cross-sell__wrapper {
+      margin: 20px 0;
+      padding: 12px 16px;
+      border: 1px solid #f1f1f1;
+      border-radius: 8px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    
+    .compact-cross-sell__heading {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--colorTextBody, #333333);
+      text-align: right;
+    }
+
+    html[dir="ltr"] .compact-cross-sell__heading {
+      text-align: left;
+    }
+
+    .compact-cross-sell__content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .compact-cross-sell__details-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0; /* for text truncation */
+    }
+
+    .compact-cross-sell__image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+      flex-shrink: 0;
+    }
+
+    .compact-cross-sell__info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .compact-cross-sell__title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--colorTextBody, #111111);
+      text-decoration: none;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .compact-cross-sell__price {
+      font-size: 13px;
+      color: var(--colorPrice, #555555);
+      font-weight: 500;
+    }
+
+    .compact-cross-sell__form {
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .compact-cross-sell__btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 4px;
+      font-weight: bold;
+      white-space: nowrap;
+      min-width: unset;
+    }
+
+    .compact-cross-sell__btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+
+  <div class="compact-cross-sell__wrapper" data-section-id="{{ section.id }}" data-section-type="compact-cross-sell">
+    {%- if section.settings.title != blank -%}
+      <div class="compact-cross-sell__heading">{{ section.settings.title }}</div>
+    {%- endif -%}
+
+    <div class="compact-cross-sell__content">
+      <div class="compact-cross-sell__details-wrap">
+        <a href="{{ cross_sell_product.url }}">
+          <img class="compact-cross-sell__image lazyload"
+               data-src="{{ cross_sell_product.featured_image | img_url: '120x' }}"
+               alt="{{ cross_sell_product.title | escape }}">
+        </a>
+        <div class="compact-cross-sell__info">
+          <a href="{{ cross_sell_product.url }}" class="compact-cross-sell__title">{{ cross_sell_product.title }}</a>
+          <div class="compact-cross-sell__price">{{ current_variant.price | money }}</div>
+        </div>
+      </div>
+
+      <form method="post" action="/cart/add" class="compact-cross-sell__form">
+        <input type="hidden" name="id" value="{{ current_variant.id }}" />
+        <button type="submit" name="add" class="btn btn--primary compact-cross-sell__btn" {% unless current_variant.available %}disabled="disabled"{% endunless %}>
+          {%- if current_variant.available -%}
+            {{ 'products.product.add_to_cart' | t }}
+          {%- else -%}
+            {{ 'products.product.sold_out' | t }}
+          {%- endif -%}
+        </button>
+      </form>
+    </div>
+  </div>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Compact Cross-Sell",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "كملي روتينك ✨"
+    },
+    {
+      "type": "product",
+      "id": "cross_sell_product",
+      "label": "Product"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Compact Cross-Sell",
+      "category": "Products"
+    }
+  ]
+}
+{% endschema %}
